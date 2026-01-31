@@ -2,8 +2,10 @@ package com.substring.auth.auth_app_backend.auth.config;
 
 import com.substring.auth.auth_app_backend.auth.entities.Provider;
 import com.substring.auth.auth_app_backend.auth.entities.RefreshToken;
+import com.substring.auth.auth_app_backend.auth.entities.Role;
 import com.substring.auth.auth_app_backend.auth.entities.User;
 import com.substring.auth.auth_app_backend.auth.repositories.RefreshTokenRepository;
+import com.substring.auth.auth_app_backend.auth.repositories.RoleRepository;
 import com.substring.auth.auth_app_backend.auth.repositories.UserRepository;
 import com.substring.auth.auth_app_backend.auth.services.impl.CookieService;
 import com.substring.auth.auth_app_backend.auth.services.impl.JwtService;
@@ -33,9 +35,19 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final JwtService jwtService;
     private final CookieService cookieService;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RoleRepository roleRepository;
 
     @Value("${app.auth.frontend.success-redirect}")
-        private String frontendSuccessUrl;
+    private String frontendSuccessUrl;
+
+    private void assignDefaultRole(User user) {
+        Role role = roleRepository
+                .findByName("ROLE_" + AppConstant.GUEST_ROLE) // or USER
+                .orElseThrow(() -> new RuntimeException("Default role not found"));
+
+        user.getRoles().add(role);
+    }
+
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -72,7 +84,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                         .providerId(googleId)
                         .build();
 
-                user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
+//                user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
+                //Assign role
+                user = userRepository.findByEmail(email).orElseGet(() -> {
+                    assignDefaultRole(newUser);
+                    return userRepository.save(newUser);
+                });
+
             }
 
             case "github" -> {
@@ -94,7 +112,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                         .providerId(githubId)
                         .build();
 
-                user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
+//                user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
+                //assign role
+                user = userRepository.findByEmail(email).orElseGet(() -> {
+                    assignDefaultRole(newUser);
+                    return userRepository.save(newUser);
+                });
 
             }
             default -> {
