@@ -40,13 +40,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     @Value("${app.auth.frontend.success-redirect}")
     private String frontendSuccessUrl;
 
-    private void assignDefaultRole(User user) {
-        Role role = roleRepository
-                .findByName("ROLE_" + AppConstant.GUEST_ROLE) // or USER
-                .orElseThrow(() -> new RuntimeException("Default role not found"));
-
-        user.getRoles().add(role);
-    }
+//    private void assignDefaultRole(User user) {
+//        Role role = roleRepository
+//                .findByName("ROLE_" + AppConstant.GUEST_ROLE) // or USER
+//                .orElseThrow(() -> new RuntimeException("Default role not found"));
+//
+//        user.getRoles().add(role);
+//    }
 
 
     @Override
@@ -84,12 +84,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                         .providerId(googleId)
                         .build();
 
-//                user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
+                user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
                 //Assign role
-                user = userRepository.findByEmail(email).orElseGet(() -> {
-                    assignDefaultRole(newUser);
-                    return userRepository.save(newUser);
-                });
+//                user = userRepository.findByEmail(email).orElseGet(() -> {
+//                    assignDefaultRole(newUser);
+//                    return userRepository.save(newUser);
+//                });
 
             }
 
@@ -112,12 +112,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                         .providerId(githubId)
                         .build();
 
-//                user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
+                user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
                 //assign role
-                user = userRepository.findByEmail(email).orElseGet(() -> {
-                    assignDefaultRole(newUser);
-                    return userRepository.save(newUser);
-                });
+//                user = userRepository.findByEmail(email).orElseGet(() -> {
+//                    assignDefaultRole(newUser);
+//                    return userRepository.save(newUser);
+//                });
 
             }
             default -> {
